@@ -23,12 +23,11 @@ TARGET_2ND_CPU_VARIANT := cortex-a53
 # Build
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
-BUILD_BROKEN_INCORRECT_PARTITION_IMAGES := true
 
 # Kernel - Common
 BOARD_KERNEL_BASE := 0x80000000
 BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci loop.max_part=7
-BOARD_KERNEL_CMDLINE += androidboot.usbconfigfs=true androidboot.init_fatal_reboot_target=recovery printk.devkmsg=on
+BOARD_KERNEL_CMDLINE += androidboot.init_fatal_reboot_target=recovery printk.devkmsg=on
 BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0
 ifeq ($(TARGET_BOARD_PLATFORM),msm8937)
     ifeq ($(TARGET_KERNEL_VERSION),4.9)
@@ -258,6 +257,10 @@ WIFI_DRIVER_FW_PATH_STA := "sta"
 WIFI_AVOID_IFACE_RESET_MAC_CHANGE := true
 WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
 WPA_SUPPLICANT_VERSION := VER_0_8_X
+
+# Wi-Fi firmware symlinks
+TARGET_FIRMWARE_WLAN_MAC_BIN_SYMLINK_TARGET ?= /mnt/vendor/persist/wlan_mac.bin
+$(call soong_config_set,MITHORIUM_FIRMWARE_WLAN_MAC_BIN,SYMLINK_TARGET,$(TARGET_FIRMWARE_WLAN_MAC_BIN_SYMLINK_TARGET))
 
 # Inherit from the proprietary version
 ifeq ($(TARGET_KERNEL_VERSION),4.9)

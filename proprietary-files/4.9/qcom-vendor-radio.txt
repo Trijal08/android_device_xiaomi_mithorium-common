@@ -1,7 +1,7 @@
 # All unpinned blobs below are extracted from LA.UM.9.6.3.r1-06200-89xx.0 (4.9)
 
 # CNE
--vendor/app/CneApp/CneApp.apk
+-vendor/app/CneApp/CneApp.apk;REQUIRED=CneApp.libvndfwk_detect_jni.qti_symlink
 -vendor/app/IWlanService/IWlanService.apk
 vendor/bin/cnd
 vendor/etc/init/cnd.rc
