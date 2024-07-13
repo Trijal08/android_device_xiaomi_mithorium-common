@@ -23,11 +23,15 @@ TARGET_KERNEL_VERSION ?= 4.9
 # Platform
 TARGET_BOARD_PLATFORM ?= msm8937
 
-ifeq ($(TARGET_BOARD_PLATFORM),msm8953)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8937)
+PRODUCT_VENDOR_PROPERTIES += \
+    vendor.usb.controller=msm_hsusb
+else ifeq ($(TARGET_BOARD_PLATFORM),msm8953)
 PRODUCT_VENDOR_PROPERTIES += \
     ro.hardware.activity_recognition=msm8937 \
     ro.hardware.sound_trigger=msm8937 \
-    vendor.opengles.version=196610
+    vendor.opengles.version=196610 \
+    vendor.usb.controller=7000000.dwc3
 endif
 
 # Permissions
