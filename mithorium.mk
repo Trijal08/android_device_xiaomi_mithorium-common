@@ -476,4 +476,172 @@ PRODUCT_COPY_FILES += \
 
 # Ramdisk
 MITHORIUM_PRODUCT_PACKAGES += \
-    init
+    init.qcom.rc \
+    init.qcom.usb.rc \
+    init.recovery.qcom.rc \
+    init.target.rc \
+    init.uclamp.rc \
+    init.xiaomi.rc \
+    ueventd.qcom.rc
+
+MITHORIUM_PRODUCT_PACKAGES += \
+    init.class_main.sh \
+    init.dump_early_dmesg.sh \
+    init.qcom.early_boot.sh \
+    init.qcom.post_boot.sh \
+    init.qcom.sensors.sh \
+    init.qcom.sh \
+    init.qcom.usb.sh \
+    init.qti.qseecomd.sh
+
+ifneq ($(MITHORIUM_BUILDING_SSI),true)
+PRODUCT_PACKAGES += \
+    fstab.qcom
+endif
+
+ifeq ($(TARGET_KERNEL_VERSION),4.19)
+MITHORIUM_PRODUCT_PACKAGES += \
+    init.qti.dcvs.sh
+endif
+
+# RIL
+ifneq ($(TARGET_HAS_NO_RADIO),true)
+MITHORIUM_PRODUCT_PACKAGES += \
+    android.hardware.radio@1.4.vendor \
+    android.hardware.radio@1.5.vendor \
+    android.hardware.radio.config@1.2.vendor \
+    android.hardware.radio.deprecated@1.0.vendor \
+    android.hardware.secure_element@1.0.vendor \
+    android.hardware.secure_element@1.1.vendor \
+    android.hardware.secure_element@1.2.vendor \
+    librmnetctl
+
+MITHORIUM_PRODUCT_PACKAGES += \
+    android.hardware.radio.c_shim@1.0 \
+    android.hardware.radio.c_shim@1.1 \
+    android.hardware.radio.c_shim@1.2 \
+    android.hardware.radio.config@1.1-service.wrapper
+endif
+
+MITHORIUM_PRODUCT_PACKAGES += \
+    libxml2
+
+# Screen density
+PRODUCT_AAPT_CONFIG := normal
+PRODUCT_AAPT_PREF_CONFIG ?= xhdpi
+
+# Sensors
+MITHORIUM_PRODUCT_PACKAGES += \
+    android.hardware.sensors@1.0-impl \
+    android.hardware.sensors@1.0-service \
+    libpower.vendor:64 \
+    libsensorndkbridge
+
+# Shims
+PRODUCT_PACKAGES += \
+    libprotobuf-cpp-full-3.9.1-vendorcompat
+
+# Soong namespaces
+PRODUCT_SOONG_NAMESPACES += \
+    vendor/qcom/opensource/usb/etc \
+    $(LOCAL_PATH)
+
+# Subsystem state notifier
+ifneq ($(TARGET_HAS_NO_RADIO),true)
+MITHORIUM_PRODUCT_PACKAGES += \
+    subsystem_state_notifier
+endif
+
+# Telephony
+ifneq ($(TARGET_HAS_NO_RADIO),true)
+MITHORIUM_PRODUCT_PACKAGES += \
+    ims-ext-common \
+    ims_ext_common.xml \
+    qti-telephony-hidl-wrapper \
+    qti_telephony_hidl_wrapper.xml \
+    qti-telephony-utils \
+    qti_telephony_utils.xml \
+    telephony-ext
+
+PRODUCT_BOOT_JARS += \
+    telephony-ext
+endif
+
+# Thermal
+ifneq ($(TARGET_DISABLE_QTI_THERMAL_HAL),true)
+MITHORIUM_PRODUCT_PACKAGES += \
+    android.hardware.thermal@2.0-service.qti.xiaomi_mithorium
+endif
+
+# USB
+MITHORIUM_PRODUCT_PACKAGES += \
+    usb_compositions.conf \
+    android.hardware.usb@1.3-service.basic \
+    android.hardware.usb.gadget@1.2-service-qti
+
+# Vibrator
+ifneq ($(TARGET_USES_DEVICE_SPECIFIC_VIBRATOR),true)
+MITHORIUM_PRODUCT_PACKAGES += \
+    vendor.qti.hardware.vibrator.service
+endif
+
+# Whitelisted app
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/qti_whitelist.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/sysconfig/qti_whitelist.xml \
+    $(LOCAL_PATH)/configs/privapp-permissions-google-product-hotwordenrollment.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/privapp-permissions-google-product-hotwordenrollment.xml \
+    $(LOCAL_PATH)/configs/privapp-permissions-qti.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/privapp-permissions-qti.xml \
+    $(LOCAL_PATH)/configs/telephony_product_privapp-permissions-qti.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/telephony_product_privapp-permissions-qti.xml \
+    $(LOCAL_PATH)/configs/telephony_system-ext_privapp-permissions-qti.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/telephony_system-ext_privapp-permissions-qti.xml
+
+# Wifi
+MITHORIUM_PRODUCT_PACKAGES += \
+    android.hardware.wifi-service \
+    libcld80211 \
+    libwifi-hal-ctrl \
+    libwpa_client \
+    hostapd \
+    wificond \
+    WifiOverlay \
+    wpa_supplicant \
+    wpa_supplicant.conf
+
+ifeq ($(TARGET_BOARD_PLATFORM),msm8953)
+MITHORIUM_PRODUCT_PACKAGES += WifiOverlay_5GHz
+endif
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/wifi/p2p_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/p2p_supplicant_overlay.conf \
+    $(LOCAL_PATH)/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/wifi/WCNSS_cfg.dat:$(TARGET_COPY_OUT_VENDOR)/firmware/wlan/prima/WCNSS_cfg.dat
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/wifi/WCNSS_qcom_cfg_$(TARGET_BOARD_PLATFORM).ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
+
+# Build MITHORIUM_PRODUCT_PACKAGES
+PRODUCT_PACKAGES += $(MITHORIUM_PRODUCT_PACKAGES)
+
+# Inherit MiThorium HALs
+$(call inherit-product-if-exists, hardware/mithorium/mithorium_qcom_hals.mk)
+
+# Wifi firmware symlinks
+ifneq ($(TARGET_EXCLUDE_DEFAULT_WIFI_FIRMWARE_SYMLINKS),true)
+PRODUCT_PACKAGES += \
+    firmware_wlan_mac.bin_symlink \
+    firmware_WCNSS_qcom_cfg.ini_symlink \
+    firmware_WCNSS_qcom_wlan_nv.bin_symlink \
+    firmware_WCNSS_wlan_dictionary.dat_symlink
+endif
+
+# Inherit the proprietary files
+ifeq ($(TARGET_KERNEL_VERSION),4.9)
+$(call inherit-product, vendor/xiaomi/mithorium-common/mithorium-common-vendor.mk)
+else ifeq ($(TARGET_KERNEL_VERSION),4.19)
+$(call inherit-product, vendor/xiaomi/mithorium-common-4.19/mithorium-common-4.19-vendor.mk)
+endif
+
+$(call inherit-product, vendor/xiaomi/mithorium-common-graphics/mithorium-common-graphics-vendor.mk)
+
+# Extra
+EXTRA_DEVICE_BRACKET := low-end
