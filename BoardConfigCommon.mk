@@ -24,11 +24,52 @@ TARGET_2ND_CPU_VARIANT := cortex-a53
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
-# Kernel - Common
+# Kernel
 BOARD_KERNEL_BASE := 0x80000000
 BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci loop.max_part=7
 BOARD_KERNEL_CMDLINE += androidboot.init_fatal_reboot_target=recovery printk.devkmsg=on
 BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0
+BOARD_KERNEL_CMDLINE += androidboot.android_dt_dir=/non-existent androidboot.boot_devices=soc/7824900.sdhci
+BOARD_BOOTIMG_HEADER_VERSION := 1
+BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOTIMG_HEADER_VERSION)
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
+BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
+BOARD_KERNEL_PAGESIZE :=  2048
+BOARD_KERNEL_SEPARATED_DTBO := true
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_CONFIG := \
+    vendor/msm8937-perf_defconfig \
+    vendor/xiaomi-sdm439.config \
+    vendor/common.config \
+    vendor/feature/android-12.config \
+    vendor/feature/erofs.config \
+    vendor/feature/exfat.config \
+    vendor/feature/lmkd.config
+TARGET_KERNEL_RECOVERY_CONFIG := \
+    vendor/msm8937-perf_defconfig \
+    vendor/xiaomi-sdm439.config \
+    vendor/common.config \
+    vendor/feature/erofs.config \
+    vendor/feature/exfat.config \
+    vendor/feature/ntfs.config \
+    vendor/feature/no-camera-stack.config \
+    vendor/feature/no-wlan-driver.config
+ifeq ($(PRODUCT_SET_DEBUGFS_RESTRICTIONS),true)
+TARGET_KERNEL_CONFIG += \
+    vendor/debugfs.config
+endif
+ifeq ($(TARGET_KERNEL_VERSION),4.9)
+TARGET_KERNEL_CONFIG += \
+    vendor/feature/uclamp.config
+else ifeq ($(TARGET_KERNEL_VERSION),4.19)
+TARGET_KERNEL_CONFIG += \
+    vendor/feature/wireguard.config
+endif
+KERNEL_LLVM_SUPPORT := true
+KERNEL_CUSTOM_LLVM := true
+KERNEL_SD_LLVM_SUPPORT := false
+TARGET_KERNEL_ADDITIONAL_FLAGS := LLVM=1 LLVM_IAS=1
+TARGET_KERNEL_SOURCE := kernel/xiaomi/sdm439
 ifeq ($(TARGET_BOARD_PLATFORM),msm8937)
     ifeq ($(TARGET_KERNEL_VERSION),4.9)
         BOARD_KERNEL_CMDLINE += earlycon=msm_serial_dm,0x78b0000
@@ -41,51 +82,6 @@ else ifeq ($(TARGET_BOARD_PLATFORM),msm8953)
     else ifeq ($(TARGET_KERNEL_VERSION),4.19)
         BOARD_KERNEL_CMDLINE += earlycon=msm_hsl_uart,0x78af000
     endif
-endif
-BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
-BOARD_KERNEL_PAGESIZE :=  2048
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
-TARGET_KERNEL_ADDITIONAL_FLAGS := LLVM=1
-
-# Kernel - Mi-Thorium
-ifeq ($(TARGET_USES_MITHORIUM_KERNEL),true)
-TARGET_KERNEL_SOURCE := kernel/xiaomi/mithorium-$(TARGET_KERNEL_VERSION)/kernel
-
-TARGET_KERNEL_CONFIG := \
-    vendor/$(TARGET_BOARD_PLATFORM)-perf_defconfig \
-    vendor/common.config \
-    vendor/feature/android-12.config \
-    vendor/feature/erofs.config \
-    vendor/feature/exfat.config \
-    vendor/feature/kprobes.config \
-    vendor/feature/lmkd.config
-
-TARGET_KERNEL_RECOVERY_CONFIG := \
-    vendor/$(TARGET_BOARD_PLATFORM)-perf_defconfig \
-    vendor/common.config \
-    vendor/feature/erofs.config \
-    vendor/feature/exfat.config \
-    vendor/feature/ntfs.config \
-    vendor/feature/no-camera-stack.config \
-    vendor/feature/no-wlan-driver.config
-
-ifeq ($(PRODUCT_SET_DEBUGFS_RESTRICTIONS),true)
-TARGET_KERNEL_CONFIG += \
-    vendor/debugfs.config
-endif
-
-ifeq ($(TARGET_KERNEL_VERSION),4.9)
-TARGET_KERNEL_CONFIG += \
-    vendor/feature/uclamp.config
-else ifeq ($(TARGET_KERNEL_VERSION),4.19)
-TARGET_KERNEL_CONFIG += \
-    vendor/feature/wireguard.config
-endif
-
-ifneq ($(shell grep CONFIG_KSU_STATIC_HOOKS $(TARGET_KERNEL_SOURCE)/techpack/KernelSU/kernel/ksu.c),)
-TARGET_KERNEL_CONFIG += \
-    vendor/feature/ksu_static_hooks.config
-endif
 endif
 
 # ANT
